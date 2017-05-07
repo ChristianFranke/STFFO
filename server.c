@@ -1,3 +1,15 @@
+/**
+ *  ######################################################################
+ *  # STFFO                                                              #
+ *  ######################################################################
+ *
+ *	Simple Telnetserver for Filesystem Operations
+ *	
+ *	@package STFFO
+ *  @git https://github.com/ChristianFranke/STFFO
+ * 
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,8 +29,8 @@ typedef enum {false, true} bool;
 
 int com(int sd, struct sockaddr_in sin, int *sin_len);
 int get(char* key, char* res, FILE *sockstream);
-int put(char* key, char* value, char* res);
-int del(char* key, char* res);
+int put(char* key, char* value, char* res, FILE *sockstream);
+int del(char* key, char* res, FILE *sockstream);
 char * getFilename(char* filename);
 
 int main(int argc, char *argv[]) {
@@ -29,37 +41,7 @@ int main(int argc, char *argv[]) {
 	
 	int portNum = atoi(argv[1]);
 	printf("Server starten mit Port %i.\n", portNum);
-	
-	/* int sd;
-    struct sockaddr_in sin;
-    
-    // Das struct „sin“ wird mit geeigneten Werten initialisiert.
-    // Dabei entspricht AF_INET dem ARPA Internet Protokoll.
-    // INADDR_ANY wird mit der IP des Hosts, auf dem der Server
-    // läuft, initialisiert.
-    int sin_len = sizeof (sin);
-    sin.sin_family = AF_INET;
-    sin.sin_addr.s_addr = INADDR_ANY;
-    sin.sin_port = htons(argv[1]);
-    
-    // Hier wird das Socket erzeugt, bekommt einen Namen zugewiesen,
-    // und es wird dafür gesorgt, dass es auf ankommende
-    // Verbindungsanfragen lauscht.
-    sd = socket(AF_INET, SOCK_STREAM, 0);
-    
-    int option = 1;
-    setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
-    
-    bind(sd, (struct sockaddr *)& sin, sizeof(sin));
-    listen(sd, 5);
-    
-    // Der Socket-Deskriptor wird an die Hauptfunktion übergeben.
-    com(sd, sin, &sin_len);
-    
-    // Sobald das Programm aus der Hauptfunktion zurückkehrt, wird
-    // das Socket geschlossen.
-    unlink((const char *)& sin); */
-    
+	 
     
     struct sockaddr_in dest; /* socket info about the machine connecting to us */
     struct sockaddr_in serv; /* socket info about our server */
@@ -117,16 +99,28 @@ int com(int sd, struct sockaddr_in sin, int *sin_len) {
             rewind(sockstream);
             
             printf("Debug: %s eingetippt.\n", inputCommand);
+            
+            if (strlen(inputCommand) == 0) {
+	            continue;
+            }
                                     
 			exec = strtok(inputCommand, delimiter);
 			
 			printf("Debug: Kommando: %s.\n", exec);
             
             if (strcmp(exec, "GET") == 0) {
-	            if (strlen(exec) > 3) {
-		            exec = strtok(NULL, delimiter);
-		            get(exec, "?", sockstream);
-	            }
+	            exec = strtok(NULL, delimiter);
+	            get(exec, "?", sockstream);
+            }
+            
+            if (strcmp(exec, "PUT") == 0) {
+	            exec = strtok(NULL, delimiter);
+	            put(exec, strtok(NULL, delimiter), "?", sockstream);
+            }
+            
+            if (strcmp(exec, "DEL") == 0) {
+	            exec = strtok(NULL, delimiter);
+	            del(exec, "?", sockstream);
             }
             
             if (strcmp(exec, "EXIT") == 0) {
@@ -157,7 +151,7 @@ int get(char* key, char* res, FILE *sockstream) {
 	printf("Debug: Hole Datensatz \"%s\".\n", key);
 	
 	char *filename = getFilename(key);
-	printf("Debug: Dateiname \"%s\".\n", filename);
+	printf("Debug: Dateiname zum Lesen: %s.\n", filename);
 	
     int c;
 	FILE *file;
@@ -187,6 +181,46 @@ int get(char* key, char* res, FILE *sockstream) {
 		
 		fprintf(sockstream, "%s existiert nicht.\n", key);
         rewind(sockstream);
+	}
+	
+	return EXIT_SUCCESS;
+}
+
+int put(char* key, char* value, char* res, FILE *sockstream) {
+	printf("Debug: Speichere Datensatz \"%s\" mit Inhalt \"%s\".\n", key, value);
+	
+	char *filename = getFilename(key);
+	printf("Debug: Dateiname zum Speichern: %s.\n", filename);
+	
+    int c;
+	FILE *file;
+	
+	file = fopen(filename, "w");
+	    
+    if (file == NULL) {
+	    printf("Debug: Konnte Datei \"%s\" nicht öffnen.\n", filename);
+	} else {
+		fprintf(file, "%s", value);
+		fclose(file);
+	}
+		
+	return EXIT_SUCCESS;
+}
+
+int del(char* key, char* res, FILE *sockstream) {
+	printf("Debug: Lösche Datensatz \"%s\".\n", key);
+	
+	char *filename = getFilename(key);
+	printf("Debug: Dateiname zum Löschen: %s.\n", filename);
+	
+	if (access(filename, F_OK) != -1) {
+	    // file exists
+	    
+	    printf("Debug: Datei \"%s\" existiert.\n", filename);
+		
+		unlink(filename);
+	} else {
+		printf("Debug: Datei \"%s\" existiert nicht.\n", filename);
 	}
 	
 	return EXIT_SUCCESS;
