@@ -3,9 +3,9 @@
  *  # STFFO                                                              #
  *  ######################################################################
  *
- *	Simple Telnetserver for Filesystem Operations
- *	
- *	@package STFFO
+ *  Simple Telnetserver for Filesystem Operations
+ *  
+ *  @package STFFO
  *  @git https://github.com/ChristianFranke/STFFO
  * 
  */
@@ -34,14 +34,14 @@ int del(char* key, char* res, FILE *sockstream);
 char * getFilename(char* filename);
 
 int main(int argc, char *argv[]) {
-	if (argc < 2) {
-		printf ("Bitte Aufruf mit %s <serverPort> bspw. %s 4001.\n", argv[0], argv[0]);
-		exit (1);
-	}
-	
-	int portNum = atoi(argv[1]);
-	printf("Server starten mit Port %i.\n", portNum);
-	 
+    if (argc < 2) {
+        printf ("Bitte Aufruf mit %s <serverPort> bspw. %s 4001.\n", argv[0], argv[0]);
+        exit (1);
+    }
+    
+    int portNum = atoi(argv[1]);
+    printf("Server starten mit Port %i.\n", portNum);
+     
     
     struct sockaddr_in dest; /* socket info about the machine connecting to us */
     struct sockaddr_in serv; /* socket info about our server */
@@ -77,7 +77,7 @@ int com(int sd, struct sockaddr_in sin, int *sin_len) {
     char inputCommand[30];
     
     char delimiter[] = " ";
-	char *exec;
+    char *exec;
     
     FILE *sockstream;
             
@@ -93,135 +93,135 @@ int com(int sd, struct sockaddr_in sin, int *sin_len) {
         rewind(sockstream);
         
         while(true) {
-	        sprintf(inputCommand, "");
-	        
-	        fscanf(sockstream, "%50[0-9a-zA-Z ]", inputCommand);
+            sprintf(inputCommand, "");
+            
+            fscanf(sockstream, "%50[0-9a-zA-Z ]", inputCommand);
             rewind(sockstream);
             
             printf("Debug: %s eingetippt.\n", inputCommand);
             
             if (strlen(inputCommand) == 0) {
-	            continue;
+                continue;
             }
                                     
-			exec = strtok(inputCommand, delimiter);
-			
-			printf("Debug: Kommando: %s.\n", exec);
+            exec = strtok(inputCommand, delimiter);
+            
+            printf("Debug: Kommando: %s.\n", exec);
             
             if (strcmp(exec, "GET") == 0) {
-	            exec = strtok(NULL, delimiter);
-	            get(exec, "?", sockstream);
+                exec = strtok(NULL, delimiter);
+                get(exec, "?", sockstream);
             }
             
             if (strcmp(exec, "PUT") == 0) {
-	            exec = strtok(NULL, delimiter);
-	            put(exec, strtok(NULL, delimiter), "?", sockstream);
+                exec = strtok(NULL, delimiter);
+                put(exec, strtok(NULL, delimiter), "?", sockstream);
             }
             
             if (strcmp(exec, "DEL") == 0) {
-	            exec = strtok(NULL, delimiter);
-	            del(exec, "?", sockstream);
+                exec = strtok(NULL, delimiter);
+                del(exec, "?", sockstream);
             }
             
             if (strcmp(exec, "EXIT") == 0) {
-	            printf("%s", "Debug: Client abgemeldet.\n");
-	            
-	            fprintf(sockstream, "%s", "Danke und tschö!\n");
+                printf("%s", "Debug: Client abgemeldet.\n");
+                
+                fprintf(sockstream, "%s", "Danke und tschö!\n");
                 rewind(sockstream);
-	            
-	            break;
+                
+                break;
             } 
-		}
-		
-		close(n_sd);
-	}
-	
-	return EXIT_SUCCESS;
+        }
+        
+        close(n_sd);
+    }
+    
+    return EXIT_SUCCESS;
 }
 
 char * getFilename(char* filename) {
-	char* response = malloc(50);
-	
-	sprintf(response, "db/%s.txt", filename);
-	
-	return response;
+    char* response = malloc(50);
+    
+    sprintf(response, "db/%s.txt", filename);
+    
+    return response;
 }
 
 int get(char* key, char* res, FILE *sockstream) {
-	printf("Debug: Hole Datensatz \"%s\".\n", key);
-	
-	char *filename = getFilename(key);
-	printf("Debug: Dateiname zum Lesen: %s.\n", filename);
-	
+    printf("Debug: Hole Datensatz \"%s\".\n", key);
+    
+    char *filename = getFilename(key);
+    printf("Debug: Dateiname zum Lesen: %s.\n", filename);
+    
     int c;
-	FILE *file;
-	
-	if (access(filename, F_OK) != -1) {
-	    // file exists
-	    
-	    printf("Debug: Datei \"%s\" existiert.\n", filename);
-	    
-	    file = fopen(filename, "r");
-		if (file) {
-		    while ((c = getc(file)) != EOF) {
-			    putchar(c);
-			    
-			    fprintf(sockstream, "%c", c);
-			    rewind(sockstream);
-		    }
-		    
-		    fclose(file);
-		    
-		    fprintf(sockstream, "%s", "\n");
-		} else {
-			printf("Debug: Konnte Datei \"%s\" nicht öffnen.\n", filename);
-		}
-	} else {
-		printf("Debug: Datei \"%s\" existiert nicht.\n", filename);
-		
-		fprintf(sockstream, "%s existiert nicht.\n", key);
+    FILE *file;
+    
+    if (access(filename, F_OK) != -1) {
+        // file exists
+        
+        printf("Debug: Datei \"%s\" existiert.\n", filename);
+        
+        file = fopen(filename, "r");
+        if (file) {
+            while ((c = getc(file)) != EOF) {
+                putchar(c);
+                
+                fprintf(sockstream, "%c", c);
+                rewind(sockstream);
+            }
+            
+            fclose(file);
+            
+            fprintf(sockstream, "%s", "\n");
+        } else {
+            printf("Debug: Konnte Datei \"%s\" nicht öffnen.\n", filename);
+        }
+    } else {
+        printf("Debug: Datei \"%s\" existiert nicht.\n", filename);
+        
+        fprintf(sockstream, "%s existiert nicht.\n", key);
         rewind(sockstream);
-	}
-	
-	return EXIT_SUCCESS;
+    }
+    
+    return EXIT_SUCCESS;
 }
 
 int put(char* key, char* value, char* res, FILE *sockstream) {
-	printf("Debug: Speichere Datensatz \"%s\" mit Inhalt \"%s\".\n", key, value);
-	
-	char *filename = getFilename(key);
-	printf("Debug: Dateiname zum Speichern: %s.\n", filename);
-	
+    printf("Debug: Speichere Datensatz \"%s\" mit Inhalt \"%s\".\n", key, value);
+    
+    char *filename = getFilename(key);
+    printf("Debug: Dateiname zum Speichern: %s.\n", filename);
+    
     int c;
-	FILE *file;
-	
-	file = fopen(filename, "w");
-	    
+    FILE *file;
+    
+    file = fopen(filename, "w");
+        
     if (file == NULL) {
-	    printf("Debug: Konnte Datei \"%s\" nicht öffnen.\n", filename);
-	} else {
-		fprintf(file, "%s", value);
-		fclose(file);
-	}
-		
-	return EXIT_SUCCESS;
+        printf("Debug: Konnte Datei \"%s\" nicht öffnen.\n", filename);
+    } else {
+        fprintf(file, "%s", value);
+        fclose(file);
+    }
+        
+    return EXIT_SUCCESS;
 }
 
 int del(char* key, char* res, FILE *sockstream) {
-	printf("Debug: Lösche Datensatz \"%s\".\n", key);
-	
-	char *filename = getFilename(key);
-	printf("Debug: Dateiname zum Löschen: %s.\n", filename);
-	
-	if (access(filename, F_OK) != -1) {
-	    // file exists
-	    
-	    printf("Debug: Datei \"%s\" existiert.\n", filename);
-		
-		unlink(filename);
-	} else {
-		printf("Debug: Datei \"%s\" existiert nicht.\n", filename);
-	}
-	
-	return EXIT_SUCCESS;
+    printf("Debug: Lösche Datensatz \"%s\".\n", key);
+    
+    char *filename = getFilename(key);
+    printf("Debug: Dateiname zum Löschen: %s.\n", filename);
+    
+    if (access(filename, F_OK) != -1) {
+        // file exists
+        
+        printf("Debug: Datei \"%s\" existiert.\n", filename);
+        
+        unlink(filename);
+    } else {
+        printf("Debug: Datei \"%s\" existiert nicht.\n", filename);
+    }
+    
+    return EXIT_SUCCESS;
 }
