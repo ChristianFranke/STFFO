@@ -38,6 +38,7 @@ int main(int argc, char *argv[]) {
         exit (1);
     }
     
+    // string2int
     int portNum = atoi(argv[1]);
     printf("Server starten mit Port %i.\n", portNum);
      
