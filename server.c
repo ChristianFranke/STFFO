@@ -23,7 +23,6 @@
 
 
 #define SERVER_PORT 4004
-
 typedef enum {false, true} bool;
 
 
