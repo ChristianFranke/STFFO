@@ -74,20 +74,21 @@ int main(int argc, char *argv[]) {
 
 int com(int sd, struct sockaddr_in sin, int *sin_len) {
     int n_sd;
+    
+    // for the command the client is typing in
     char inputCommand[30];
     
     char delimiter[] = " ";
     char *exec;
     
     FILE *sockstream;
-            
-    char *ciao = "Vielen Dank, Sie haben einen einfachen Geldautomaten sehr glücklich gemacht.\n\n";
     
     while(true) {
         n_sd = accept(sd, &sin, sin_len);
         
         printf("Debug: Neuer Client per telnet.\n");
         
+        // client open readable
         sockstream = fdopen(n_sd, "r+");
         fprintf(sockstream, "%s", "Willkommen auf dem Datenserver. Bitte nutze GET, PUT oder DEL Kommandos.\n\n");
         rewind(sockstream);
@@ -95,42 +96,43 @@ int com(int sd, struct sockaddr_in sin, int *sin_len) {
         while(true) {
             sprintf(inputCommand, "");
             
+            // regex get command
             fscanf(sockstream, "%50[0-9a-zA-Z ]", inputCommand);
             rewind(sockstream);
             
             printf("Debug: %s eingetippt.\n", inputCommand);
             
+            // if nothing is typed in (stringlength == 0)
             if (strlen(inputCommand) == 0) {
                 continue;
             }
-                                    
+            
+            // split inputCommand at <delimiter> and return first part
             exec = strtok(inputCommand, delimiter);
             
             printf("Debug: Kommando: %s.\n", exec);
             
+            // if first part contains get, then ...; if put, then ...
             if (strcmp(exec, "GET") == 0) {
                 exec = strtok(NULL, delimiter);
                 get(exec, "?", sockstream);
-            }
-            
-            if (strcmp(exec, "PUT") == 0) {
+            } else if (strcmp(exec, "PUT") == 0) {
                 exec = strtok(NULL, delimiter);
                 put(exec, strtok(NULL, delimiter), "?", sockstream);
-            }
-            
-            if (strcmp(exec, "DEL") == 0) {
+            } else if (strcmp(exec, "DEL") == 0) {
                 exec = strtok(NULL, delimiter);
                 del(exec, "?", sockstream);
-            }
-            
-            if (strcmp(exec, "EXIT") == 0) {
+            } else if (strcmp(exec, "EXIT") == 0) {
                 printf("%s", "Debug: Client abgemeldet.\n");
                 
                 fprintf(sockstream, "%s", "Danke und tschö!\n");
                 rewind(sockstream);
                 
                 break;
-            } 
+            } else {
+	            fprintf(sockstream, "%s", "Unbekanntes Kommando!\n");
+                rewind(sockstream);
+            }
         }
         
         close(n_sd);
@@ -139,6 +141,7 @@ int com(int sd, struct sockaddr_in sin, int *sin_len) {
     return EXIT_SUCCESS;
 }
 
+// function to return local filname by key
 char * getFilename(char* filename) {
     char* response = malloc(50);
     
@@ -147,6 +150,7 @@ char * getFilename(char* filename) {
     return response;
 }
 
+// function to return string by key
 int get(char* key, char* res, FILE *sockstream) {
     printf("Debug: Hole Datensatz \"%s\".\n", key);
     
@@ -186,6 +190,7 @@ int get(char* key, char* res, FILE *sockstream) {
     return EXIT_SUCCESS;
 }
 
+// function to write value by key
 int put(char* key, char* value, char* res, FILE *sockstream) {
     printf("Debug: Speichere Datensatz \"%s\" mit Inhalt \"%s\".\n", key, value);
     
@@ -202,11 +207,14 @@ int put(char* key, char* value, char* res, FILE *sockstream) {
     } else {
         fprintf(file, "%s", value);
         fclose(file);
+        
+        fprintf(sockstream, "%s geschrieben.\n", key);
     }
         
     return EXIT_SUCCESS;
 }
 
+// function to delete by key
 int del(char* key, char* res, FILE *sockstream) {
     printf("Debug: Lösche Datensatz \"%s\".\n", key);
     
@@ -219,6 +227,8 @@ int del(char* key, char* res, FILE *sockstream) {
         printf("Debug: Datei \"%s\" existiert.\n", filename);
         
         unlink(filename);
+        
+        fprintf(sockstream, "%s gelöscht.\n", key);
     } else {
         printf("Debug: Datei \"%s\" existiert nicht.\n", filename);
     }
