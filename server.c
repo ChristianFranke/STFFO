@@ -21,7 +21,15 @@
 #include <sys/time.h>
 #include <netinet/in.h>
 
+#include <sys/shm.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+
+#include <limits.h>
+
 #include "server.h"
+#include "com.inc.c"
+#include "util.inc.c"
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -32,7 +40,7 @@ int main(int argc, char *argv[]) {
     // string2int
     int portNum = atoi(argv[1]);
     printf("Server starten mit Port %i.\n", portNum);
-     
+    
     
     struct sockaddr_in dest; /* socket info about the machine connecting to us */
     struct sockaddr_in serv; /* socket info about our server */
@@ -64,6 +72,3 @@ int main(int argc, char *argv[]) {
     
     return EXIT_SUCCESS;
 }
-
-#include "com.inc.c"
-#include "util.inc.c"
