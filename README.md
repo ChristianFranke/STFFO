@@ -35,6 +35,8 @@ PUT key value
 GET key
 value
 DEL key
+TARGET HDD
+Speicherziel auf HDD geändert.
 ```
 
 The key-value database is persistent stored in ./db.
