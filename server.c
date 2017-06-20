@@ -19,6 +19,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/time.h>
+#include <sys/sem.h>
 #include <netinet/in.h>
 
 #include <sys/shm.h>
@@ -30,8 +31,14 @@
 #include "server.h"
 #include "com.inc.c"
 #include "util.inc.c"
+#include "semph.c"
+
+
+
+
 
 int main(int argc, char *argv[]) {
+    
     if (argc < 2) {
         printf ("Bitte Aufruf mit %s <serverPort> bspw. %s 4001.\n", argv[0], argv[0]);
         exit (1);

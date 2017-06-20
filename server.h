@@ -8,9 +8,11 @@ void* createSharedMemory(size_t size);
 
 #define SERVER_PORT 4004
 #define ROM 0
+#define KEY (1492)
 typedef enum {false, true} bool;
 
 #define SEGSIZE sizeof(int)
+#define SEM_ID 250
 
 // target for saving buckets
 typedef enum { HDD, RAM } target;

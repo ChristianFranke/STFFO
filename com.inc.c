@@ -1,4 +1,45 @@
+#include "semph.c"
+
+static void delete (void) {
+   int res;
+   printf ("\nServer wird beendet - Lösche Semaphor %d.\n", sem_delete);
+   if (semctl (sem_delete, 0, IPC_RMID, 0) == -1) {
+   	   printf ("Fehler beim Löschen des Semaphors.\n");
+   }
+   /* Delete Seg when exit process*/
+   res = shmctl (shm_delete, IPC_RMID, NULL);
+   if (res == -1)
+      printf ("Fehler bei shmctl() shmid %d, Kommando %d\n",
+          shm_delete, IPC_RMID);   
+   return;
+}
+
 int com(int sd, struct sockaddr_in sin, int *sin_len) {
+	int sem_set_id; //ID of sem set
+	int rc;
+	union semun sunion{
+		int val;
+		struct semid_ds *buf;
+		ushort * array;
+	} sem_val;
+	
+	/*create a sem set with ID 250, with one sem, only owner can access*/
+	sem_set_id = semget(SEM_ID, 1, IPC_CREAT | 0600);
+    if (sem_set_id == -1) {
+    	perror("main: semget");
+    	exit(1);
+    	}
+    	
+    /*Initialize sem*/
+	sem_val.val = 1;
+	rc = semctl(sem_set_id, 0, SETVAL, sem_val);
+	if (rc == -1) {
+		perror("main: semctl");
+		exit(1);
+	}
+	sem_delete = sem_set_id;
+	atexit (&delete);
+	
     int n_sd;
     
     // for the command the client is typing in
