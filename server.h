@@ -12,7 +12,6 @@ void* createSharedMemory(size_t size);
 typedef enum {false, true} bool;
 
 #define SEGSIZE sizeof(int)
-#define SEM_ID 250
 
 // target for saving buckets
 typedef enum { HDD, RAM } target;

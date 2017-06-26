@@ -163,8 +163,10 @@ char *ht_get( hashtable_t *hashtable, char *key ) {
 
 // function to return string by key
 int get(char* key, char* res, FILE *sockstream) {
-	sem_lock(sem_set_id);
-    printf("Debug: Hole Datensatz \"%s\".\n", key);
+	
+	semop(sem_set_id, &sem_lock, 1);
+    
+	printf("Debug: Hole Datensatz \"%s\".\n", key);
     
     if (currentTarget == ROM) {
 		hashtable_t *hashtable = ht_create(65536);
@@ -206,14 +208,16 @@ int get(char* key, char* res, FILE *sockstream) {
 	        rewind(sockstream);
 	    }
     }
-    sem_unlock(sem_set_id);
+    semop(sem_set_id, &sem_unlock, 1);
     
     return EXIT_SUCCESS;
 }
 
 // function to write value by key
 int put(char* key, char* value, char* res, FILE *sockstream) {
-    sem_lock(sem_set_id);
+    
+	semop(sem_set_id, &sem_lock, 1);
+    
 	printf("Debug: Speichere Datensatz \"%s\" mit Inhalt \"%s\".\n", key, value);
     
     if (currentTarget == ROM) {
@@ -241,15 +245,17 @@ int put(char* key, char* value, char* res, FILE *sockstream) {
 	        fprintf(sockstream, "%s geschrieben.\n", key);
 	    }
     }
-    sem_unlock(sem_set_id);
+    semop(sem_set_id, &sem_unlock, 1);
     
     return EXIT_SUCCESS;
 }
 
 // function to delete by key
 int del(char* key, char* res, FILE *sockstream) {
-	sem_lock(sem_set_id);
-    printf("Debug: Lösche Datensatz \"%s\".\n", key);
+	
+	semop(sem_set_id, &sem_lock, 1);
+    
+	printf("Debug: Lösche Datensatz \"%s\".\n", key);
     
     char *filename = getFilename(key);
     printf("Debug: Dateiname zum Löschen: %s.\n", filename);
@@ -265,14 +271,17 @@ int del(char* key, char* res, FILE *sockstream) {
     } else {
         printf("Debug: Datei \"%s\" existiert nicht.\n", filename);
     }
-    sem_unlock(sem_set_id);
+    
+    semop(sem_set_id, &sem_unlock, 1);
     
     return EXIT_SUCCESS;
 }
 
 int setTarget(char* key, char* res, FILE *sockstream) {
-	sem_lock(sem_set_id);
-    printf("Debug: setze Speicherziel auf \"%s\".\n", key);
+	
+	semop(sem_set_id, &sem_lock, 1);
+    
+	printf("Debug: setze Speicherziel auf \"%s\".\n", key);
     
     if (strcmp(key, "HDD") == 0) {
     	// save on HDD
@@ -291,7 +300,7 @@ int setTarget(char* key, char* res, FILE *sockstream) {
     
     fprintf(sockstream, "Auf Speicherziel \"%s\" geändert.\n", key);
     
-    sem_unlock(sem_set_id);
+    semop(sem_set_id, &sem_unlock, 1);
     
     return EXIT_SUCCESS;
 }

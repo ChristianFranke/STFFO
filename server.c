@@ -31,11 +31,10 @@
 #include "server.h"
 #include "com.inc.c"
 #include "util.inc.c"
-#include "semph.c"
 
 
-
-
+int sem_set_id;
+unsigned short sem_val[1];
 
 int main(int argc, char *argv[]) {
     
@@ -59,6 +58,15 @@ int main(int argc, char *argv[]) {
     serv.sin_addr.s_addr = htonl(INADDR_ANY); /* set our address to any interface */
     serv.sin_port = htons(portNum);           /* set the server port number */    
 
+    /*create a sem set with ID 250, with one sem, only owner can access*/
+    sem_set_id = semget(IPC_PRIVATE, 1, IPC_CREAT | 0600);
+    if (sem_set_id == -1) {
+    	perror("main: semget");
+    	exit(1);
+    	}
+    
+    semctl(sem_set_id, 0, SETVAL, sem_val[0]);    	
+    	
     mySocket = socket(AF_INET, SOCK_STREAM, 0);
     fflush(stdout);
     
