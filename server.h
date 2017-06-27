@@ -16,9 +16,16 @@ typedef enum {false, true} bool;
 typedef enum { HDD = 1, RAM = 2 } target;
 target currentTarget = RAM;
 
+// keyValueStorage for ram saving
 struct keyValueStorage {
     char key[64];
     char value[1024];
 };
  
 struct keyValueStorage keys[1024];
+
+// semaphores 
+int sem_id;
+struct sembuf enterRead, leaveRead, enterWrite, leaveWrite;
+unsigned short marker[2];
+int rc;

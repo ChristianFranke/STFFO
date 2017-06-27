@@ -25,6 +25,8 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 
+#include <sys/sem.h>
+
 #include <limits.h>
 
 #include "server.h"
@@ -53,6 +55,21 @@ int main(int argc, char *argv[]) {
     serv.sin_port = htons(portNum);           /* set the server port number */    
     
     memset(keys, 0, sizeof(keys));
+    
+    
+    // add two semaphors
+	sem_id = semget(IPC_PRIVATE, 2, IPC_CREAT|0644);
+	if (sem_id == -1) { 
+		perror("Could not create semaphors"); 
+		return -1; 
+	}
+
+	// set all semaphores to 1
+	marker[0] = 1;
+	marker[1] = 1;
+	semctl(sem_id, 0, SETVAL, marker[0]);
+	semctl(sem_id, 1, SETVAL, marker[1]);
+    
 
     mySocket = socket(AF_INET, SOCK_STREAM, 0);
     fflush(stdout);

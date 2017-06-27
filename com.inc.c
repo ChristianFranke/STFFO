@@ -28,6 +28,18 @@ int com(int sd, struct sockaddr_in sin, int *sin_len) {
         	
 	        printf("Debug: Neuer Client per telnet.\n");
 	        
+	        // semaphores
+			enterRead.sem_num = leaveRead.sem_num = 0;
+			enterRead.sem_flg = leaveRead.sem_flg = SEM_UNDO;
+			enterRead.sem_op = -1;
+			leaveRead.sem_op = 1;
+
+			enterWrite.sem_num = leaveWrite.sem_num = 1;
+			enterWrite.sem_flg = leaveWrite.sem_flg = SEM_UNDO;
+			enterWrite.sem_op = -1;
+			leaveWrite.sem_op = 1;
+			
+	        
 	        // client open readable
 	        sockstream = fdopen(n_sd, "r+");
 	        fprintf(sockstream, "%s", "Willkommen auf dem Datenserver. Bitte nutze GET, PUT oder DEL Kommandos.\n\n");
@@ -81,6 +93,7 @@ int com(int sd, struct sockaddr_in sin, int *sin_len) {
 	        }
 	        
 	        close(n_sd);
+	        semctl(sem_id, 0, IPC_RMID);
 	    }
     }
     

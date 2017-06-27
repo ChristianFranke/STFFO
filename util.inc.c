@@ -9,6 +9,12 @@ char * getFilename(char* filename) {
 
 // function to return string by key
 int get(char* key, char* res, FILE *sockstream) {
+	// semaphores begin
+	semop(sem_id, &enterRead, 1);
+	rc += 1;
+	if (rc == 1) semop(sem_id, &enterWrite, 1);
+	semop(sem_id, &leaveRead, 1);
+	
     printf("Debug: Hole Datensatz \"%s\".\n", key);
     
     if (currentTarget == RAM) {
@@ -17,6 +23,12 @@ int get(char* key, char* res, FILE *sockstream) {
 	            strcpy(res, keys[i].value);
 	            
 	            fprintf(sockstream, "%s\n", keys[i].value);
+	            
+	            semop(sem_id, &enterRead, 1);
+
+				rc -= 1;
+				if (rc == 0) semop(sem_id, &leaveWrite, 1);
+				semop(sem_id, &leaveRead, 1);
 	            
 	            return EXIT_SUCCESS;
 	        }
@@ -49,6 +61,13 @@ int get(char* key, char* res, FILE *sockstream) {
 	            
 	            fclose(file);
 	            
+	            semop(sem_id, &enterRead, 1);
+
+				rc -= 1;
+				if (rc == 0) semop(sem_id, &leaveWrite, 1);
+				semop(sem_id, &leaveRead, 1);
+
+	            
 	            fprintf(sockstream, "%s", "\n");
 	        } else {
 	            printf("Debug: Konnte Datei \"%s\" nicht öffnen.\n", filename);
@@ -61,12 +80,21 @@ int get(char* key, char* res, FILE *sockstream) {
 	    }
     }
     
+    rc -= 1;
+	if (rc == 0) semop(sem_id, &leaveWrite, 1);
+
+	// semaphores end
+	semop(sem_id, &leaveRead, 1);
+    
     
     return EXIT_SUCCESS;
 }
 
 // function to write value by key
 int put(char* key, char* value, char* res, FILE *sockstream) {
+	// semaphores begin
+	semop(sem_id, &enterWrite, 1);
+	
     printf("Debug: Speichere Datensatz \"%s\" mit Inhalt \"%s\".\n", key, value);
     
     if (currentTarget == RAM) {	    
@@ -78,9 +106,14 @@ int put(char* key, char* value, char* res, FILE *sockstream) {
 	            
 	            fprintf(sockstream, "%s geschrieben.\n", key);
 	            
+	            semop(sem_id, &leaveWrite, 1);
+	            
 	            return EXIT_SUCCESS;
 	        }
 	    }
+	    
+	    // semaphores end
+		semop(sem_id, &leaveWrite, 1);
     } else {
 	    char *filename = getFilename(key);
 	    printf("Debug: Dateiname zum Speichern: %s.\n", filename);
@@ -92,9 +125,14 @@ int put(char* key, char* value, char* res, FILE *sockstream) {
 	        
 	    if (file == NULL) {
 	        printf("Debug: Konnte Datei \"%s\" nicht öffnen.\n", filename);
+	        
+	        // semaphores end
+			semop(sem_id, &leaveWrite, 1);
 	    } else {
 	        fprintf(file, "%s", value);
 	        fclose(file);
+	        
+	        semop(sem_id, &leaveWrite, 1);
 	        
 	        fprintf(sockstream, "%s geschrieben.\n", key);
 	    }
@@ -105,6 +143,9 @@ int put(char* key, char* value, char* res, FILE *sockstream) {
 
 // function to delete by key
 int del(char* key, char* res, FILE *sockstream) {
+	// semaphores begin
+	semop(sem_id, &enterWrite, 1);
+	
     printf("Debug: Lösche Datensatz \"%s\".\n", key);
     
     if (currentTarget == RAM) {
@@ -114,6 +155,8 @@ int del(char* key, char* res, FILE *sockstream) {
 	            memset(&keys[i], 0, sizeof(keys[i]));
 	            
 	            fprintf(sockstream, "%s gelöscht.\n", key);
+	            
+	            semop(sem_id, &leaveWrite, 1);
 	            
 	            return EXIT_SUCCESS;
 	        }
@@ -132,11 +175,16 @@ int del(char* key, char* res, FILE *sockstream) {
 	        
 	        unlink(filename);
 	        
+			semop(sem_id, &leaveWrite, 1);
+	       
 	        fprintf(sockstream, "%s gelöscht.\n", key);
 	    } else {
 	        printf("Debug: Datei \"%s\" existiert nicht.\n", filename);
 	    }
 	}
+	
+	// semaphores end
+	semop(sem_id, &leaveWrite, 1);
     
     return EXIT_SUCCESS;
 }
