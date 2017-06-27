@@ -13,7 +13,12 @@ typedef enum {false, true} bool;
 #define SEGSIZE sizeof(int)
 
 // target for saving buckets
-typedef enum { HDD, RAM } target;
+typedef enum { HDD = 1, RAM = 2 } target;
 target currentTarget = RAM;
 
-const char * ramBucket[100];
+struct keyValueStorage {
+    char key[64];
+    char value[1024];
+};
+ 
+struct keyValueStorage keys[1024];

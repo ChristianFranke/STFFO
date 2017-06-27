@@ -52,19 +52,21 @@ int com(int sd, struct sockaddr_in sin, int *sin_len) {
 	            
 	            printf("Debug: Kommando: %s.\n", exec);
 	            
+	            char res[256];
+	            
 	            // if first part contains get, then ...; if put, then ...
 	            if (strcmp(exec, "GET") == 0) {
 	                exec = strtok(NULL, delimiter);
-	                get(exec, "?", sockstream);
+	                get(exec, res, sockstream);
 	            } else if (strcmp(exec, "PUT") == 0) {
 	                exec = strtok(NULL, delimiter);
-	                put(exec, strtok(NULL, delimiter), "?", sockstream);
+	                put(exec, strtok(NULL, delimiter), res, sockstream);
 	            } else if (strcmp(exec, "DEL") == 0) {
 	                exec = strtok(NULL, delimiter);
-	                del(exec, "?", sockstream);
+	                del(exec, res, sockstream);
 	            } else if (strcmp(exec, "TARGET") == 0) {
 	                exec = strtok(NULL, delimiter);
-	                setTarget(exec, "?", sockstream);
+	                setTarget(exec, res, sockstream);
 	            } else if (strcmp(exec, "EXIT") == 0) {
 	                printf("%s", "Debug: Client abgemeldet.\n");
 	                
