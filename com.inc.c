@@ -1,5 +1,4 @@
 int com(int sd, struct sockaddr_in sin, int *sin_len) {
-		
     int n_sd;
     
     // for the command the client is typing in
@@ -33,22 +32,6 @@ int com(int sd, struct sockaddr_in sin, int *sin_len) {
 	        sockstream = fdopen(n_sd, "r+");
 	        fprintf(sockstream, "%s", "Willkommen auf dem Datenserver. Bitte nutze GET, PUT oder DEL Kommandos.\n\n");
 	        rewind(sockstream);
-	        
-	        //Locking
-	        struct sembuf sem_lock;
-	        sem_lock.sem_num = 0;
-	        sem_lock.sem_op = -1;
-	        sem_lock.sem_flg = SEM_UNDO;
-	        semop(sem_set_id, &sem_op, 1);
-	        
-	        //Unlocking
-	        struct sembuf sem_unlock;
-	        sem_unlock.sem_num = 0;
-	        sem_unlock.sem_op = 1;
-	        sem_unlock.sem_flg = SEM_UNDO;
-	        semop(sem_set_id, &sem_op, 1);
-	        
-	        semctl(sem_set_id, 0, IPC_RMID);
 	        
 	        while(true) {
 	            sprintf(inputCommand, "");
