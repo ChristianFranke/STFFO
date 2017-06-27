@@ -21,6 +21,11 @@ int get(char* key, char* res, FILE *sockstream) {
 	            return EXIT_SUCCESS;
 	        }
 	    }
+	    
+	    printf("Debug: \"%s\" existiert nicht.\n", key);
+	        
+        fprintf(sockstream, "%s existiert nicht.\n", key);
+        rewind(sockstream);
     } else {
 	    char *filename = getFilename(key);
 	    printf("Debug: Dateiname zum Lesen: %s.\n", filename);
