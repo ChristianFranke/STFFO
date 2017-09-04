@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
     /* bind serv information to mysocket */
     bind(mySocket, (struct sockaddr *)&serv, sizeof(struct sockaddr));
 
-    /* start listening, allowing a queue of up to 1 pending connection */
+    /* start listening, allowing a queue of up to 5 pending connection */
     listen(mySocket, 5);
     
     com(mySocket, serv, &socksize);

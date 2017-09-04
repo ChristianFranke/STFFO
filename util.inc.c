@@ -20,11 +20,10 @@ int get(char* key, char* res, FILE *sockstream) {
     if (currentTarget == RAM) {
 	    for (int i=0; i<sizeof(keys) / sizeof(keys[0]); i++) {
 	        if (strncmp(keys[i].key, key, sizeof(keys[i].key)) == 0) {
-	            strcpy(res, keys[i].value);
-	            
-	            fprintf(sockstream, "%s\n", keys[i].value);
-	            
 	            semop(sem_id, &enterRead, 1);
+	            
+	            strcpy(res, keys[i].value);
+	            fprintf(sockstream, "%s\n", keys[i].value);;
 
 				rc -= 1;
 				if (rc == 0) semop(sem_id, &leaveWrite, 1);
